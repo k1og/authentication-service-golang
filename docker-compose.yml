@@ -1,0 +1,48 @@
+version: '3.7'
+
+services:
+
+    mongodb-rs-node-1:
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        entrypoint: mongod --bind_ip_all --replSet rs0
+
+    mongodb-rs-node-2:
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        entrypoint: mongod --bind_ip_all --replSet rs0
+
+    mongodb-rs-node-3:
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        entrypoint: mongod --bind_ip_all --replSet rs0
+
+    mongo-replica-set-setup:
+        image: mongo
+        restart: on-failure
+        depends_on: 
+            - mongodb-rs-node-1
+            - mongodb-rs-node-2
+            - mongodb-rs-node-3
+        volumes: 
+            - .:/scripts
+        entrypoint: bash /scripts/mongo_replica_set_setup.sh
+
+    mongodb-web:
+        image: mongo-express
+        restart: always
+        depends_on: 
+            - mongodb-rs-node-1
+            - mongodb-rs-node-2
+            - mongodb-rs-node-3
+            - mongo-replica-set-setup
+        ports:
+            - 27011:8081
+        environment:
+            ME_CONFIG_MONGODB_SERVER: mongodb-rs-node-1,mongodb-rs-node-2,mongodb-rs-node-3
