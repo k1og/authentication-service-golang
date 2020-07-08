@@ -2,26 +2,41 @@ version: '3.7'
 
 services:
 
+    app: 
+        image: golang:1.14
+        restart: always
+        depends_on: 
+            - mongodb-rs-node-1
+            - mongodb-rs-node-2
+            - mongodb-rs-node-3
+            - mongo-replica-set-setup
+        volumes:
+            - .:/src
+        working_dir: /src
+        entrypoint: ["go", "run", "main.go"]
+        ports: 
+            - 8080:8080
+
     mongodb-rs-node-1:
         image: mongo
         restart: always
         expose:
             - 27017
-        entrypoint: mongod --bind_ip_all --replSet rs0
+        entrypoint: ["mongod", "--bind_ip_all", "--replSet", "rs0"]
 
     mongodb-rs-node-2:
         image: mongo
         restart: always
         expose:
             - 27017
-        entrypoint: mongod --bind_ip_all --replSet rs0
+        entrypoint: ["mongod", "--bind_ip_all", "--replSet", "rs0"]
 
     mongodb-rs-node-3:
         image: mongo
         restart: always
         expose:
             - 27017
-        entrypoint: mongod --bind_ip_all --replSet rs0
+        entrypoint: ["mongod", "--bind_ip_all", "--replSet", "rs0"]
 
     mongo-replica-set-setup:
         image: mongo
@@ -32,7 +47,7 @@ services:
             - mongodb-rs-node-3
         volumes: 
             - .:/scripts
-        entrypoint: bash /scripts/mongo_replica_set_setup.sh
+        entrypoint: ["bash", "/scripts/mongo_replica_set_setup.sh"]
 
     mongodb-web:
         image: mongo-express
